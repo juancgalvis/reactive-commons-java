@@ -20,6 +20,14 @@
 **Implemented enhancements:**
 
 - Update to ReactorRabbit 1.1.0 [\#17](https://github.com/reactive-commons/reactive-commons-java/issues/17)
+- Separate messagelistenersconfig [\#41](https://github.com/reactive-commons/reactive-commons-java/pull/41)
+
+**Closed issues:**
+
+- separate ApplicationEventListener and ApplicationQueryListener [\#37](https://github.com/reactive-commons/reactive-commons-java/issues/37)
+- Upgrade to ReactorRabbit 1.2.0 [\#24](https://github.com/reactive-commons/reactive-commons-java/issues/24)
+- Listen event on all instances [\#22](https://github.com/reactive-commons/reactive-commons-java/issues/22)
+- Add parameter for maximum message retries [\#19](https://github.com/reactive-commons/reactive-commons-java/issues/19)
 
 ## [0.5.2-beta](https://github.com/reactive-commons/reactive-commons-java/tree/0.5.2-beta) (2020-07-20)
 
@@ -45,6 +53,12 @@
 
 ## [v0.3.2-beta1](https://github.com/reactive-commons/reactive-commons-java/tree/v0.3.2-beta1) (2020-03-30)
 
+**Closed issues:**
+
+- Reactor rabbit uses different channel for resource management [\#35](https://github.com/reactive-commons/reactive-commons-java/issues/35)
+- Async commons starter is not using the ObjectMapper instance configured by Spring [\#25](https://github.com/reactive-commons/reactive-commons-java/issues/25)
+- Serve resource handler dinamically [\#9](https://github.com/reactive-commons/reactive-commons-java/issues/9)
+
 ## [0.0.5-beta2](https://github.com/reactive-commons/reactive-commons-java/tree/0.0.5-beta2) (2019-01-02)
 
 **Implemented enhancements:**
@@ -53,6 +67,11 @@
 - Tolerant reader in all message receivers [\#10](https://github.com/reactive-commons/reactive-commons-java/issues/10)
 - Integrate acceptance test with travis. [\#7](https://github.com/reactive-commons/reactive-commons-java/issues/7)
 - Query handler returning an empty publisher causes timeout on the receiver [\#1](https://github.com/reactive-commons/reactive-commons-java/issues/1)
+
+**Closed issues:**
+
+- Type inference not working for queries [\#5](https://github.com/reactive-commons/reactive-commons-java/issues/5)
+- ClassCastException when requested query has no handler [\#3](https://github.com/reactive-commons/reactive-commons-java/issues/3)
 
 
 
