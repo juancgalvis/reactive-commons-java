@@ -3,7 +3,7 @@ name: 'reactive-commons-ci-cd'
 on:
   push:
     branches:
-      - master
+      - feature/test-changelog-gen
 
   pull_request:
     branches:
@@ -18,20 +18,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+      - name: Generate Changelog
+        uses: heinrichreimer/github-changelog-generator-action@v2.1.1
         with:
-          java-version: 1.8
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Execute jacocoTestReport and Sonar
-        env:
-          SONAR_TOKEN: ${{secrets.SONAR_TOKEN}}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew test jacocoTestReport sonarqube
-#        run: ./gradlew test jacocoTestReport && cp build/reports/jacoco/report.xml jacoco.xml || echo "Code coverage failed"
-      - name: Build with Gradle
-        run: ./gradlew build --refresh-dependencies --no-daemon --continue
+          token: ${{ secrets.GITHUB_TOKEN }}
+          user: reactive-commons
+          project: reactive-commons-java
+          pullRequests: true
+          issues: true
+          issuesWoLabels: true
+      - name: Push Docs and Changelog
+        uses: github-actions-x/commit@v2.7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          push-branch: 'feature/test-changelog-gen'
+          commit-message: 'Automatic docs and changelog generation'
+          force-add: 'true'
+          files: CHANGELOG.md docs/
+          name: ${{ github.actor }}
+          email: ${{ github.actor }}@users.noreply.github.com
+#      - name: Set up JDK 1.8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 1.8
+#      - name: Grant execute permission for gradlew
+#        run: chmod +x gradlew
+#      - name: Execute jacocoTestReport and Sonar
+#        env:
+#          SONAR_TOKEN: ${{secrets.SONAR_TOKEN}}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: ./gradlew test jacocoTestReport sonarqube
+##        run: ./gradlew test jacocoTestReport && cp build/reports/jacoco/report.xml jacoco.xml || echo "Code coverage failed"
+#      - name: Build with Gradle
+#        run: ./gradlew build --refresh-dependencies --no-daemon --continue
 #      - name: Push codeCoverage to Codecov
 #        run: bash <(curl -s https://codecov.io/bash)
 
@@ -54,11 +73,16 @@ jobs:
         uses: heinrichreimer/github-changelog-generator-action@v2.1.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          user: reactive-commons
+          project: reactive-commons-java
+          pullRequests: true
+          issues: true
+          issuesWoLabels: true
       - name: Push Docs and Changelog
         uses: github-actions-x/commit@v2.7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          push-branch: 'master'
+          push-branch: 'feature/test-changelog-gen'
           commit-message: 'Automatic docs and changelog generation'
           force-add: 'true'
           files: CHANGELOG.md docs/
