@@ -25,7 +25,6 @@ jobs:
           user: "reactive-commons"
           project: "reactive-commons-java"
           pullRequests: "true"
-          changelogRef: "master"
           issues: "true"
           issuesWoLabels: "true"
           stripGeneratorNotice: "true"
