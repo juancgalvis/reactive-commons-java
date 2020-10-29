@@ -25,8 +25,10 @@ jobs:
           user: reactive-commons
           project: reactive-commons-java
           pullRequests: true
+          changelogRef: "master"
           issues: true
           issuesWoLabels: true
+          stripGeneratorNotice: true
       - name: Push Docs and Changelog
         uses: github-actions-x/commit@v2.7
         with:
