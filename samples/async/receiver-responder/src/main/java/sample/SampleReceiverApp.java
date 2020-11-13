@@ -48,7 +48,8 @@ public class SampleReceiverApp {
 
     @Bean
     public HandlerRegistry handlerRegistrySubs(DirectAsyncGateway gateway) {
-        return HandlerRegistry.register()
+        return register()
+                .handleCommand("sample.command", call -> Mono.empty(), Call.class)
                 .serveQuery("query1", message -> {
                     log.info("resolving from direct query");
                     return just(new RespQuery1("Ok", message));
