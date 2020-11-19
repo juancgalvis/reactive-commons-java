@@ -125,7 +125,7 @@ public class RabbitMqConfig {
         if (properties.getSsl().isEnabled()) {
             factory.useSslProtocol();
         }
-//        factory.useNio();
+        factory.useNio();
         return () -> factory;
     }
 
