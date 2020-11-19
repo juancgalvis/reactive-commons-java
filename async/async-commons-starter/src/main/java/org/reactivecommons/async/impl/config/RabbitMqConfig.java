@@ -34,6 +34,8 @@ import reactor.core.publisher.Mono;
 import reactor.rabbitmq.*;
 import reactor.util.retry.Retry;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,29 +64,33 @@ public class RabbitMqConfig {
     private String appName;
 
     @Bean
-    public ReactiveMessageSender messageSender(MessageConverter converter, BrokerConfigProps brokerConfigProps, SenderOptions senderOptions) {
+    public ReactiveMessageSender messageSender(MessageConverter converter, BrokerConfigProps brokerConfigProps,
+                                               SenderOptions senderOptions) {
         final Sender sender = RabbitFlux.createSender(senderOptions);
-        return new ReactiveMessageSender(sender, brokerConfigProps.getAppName(), converter, new TopologyCreator(sender));
+        return new ReactiveMessageSender(sender, brokerConfigProps.getAppName(), converter,
+                new TopologyCreator(sender));
     }
 
     @Bean
-    public SenderOptions reactiveCommonsSenderOptions(ConnectionFactoryProvider provider, RabbitProperties rabbitProperties) {
-        final Mono<Connection> senderConnection = createConnectionMono(provider.getConnectionFactory(), appName, SENDER_TYPE);
+    public SenderOptions reactiveCommonsSenderOptions(ConnectionFactoryProvider provider,
+                                                      RabbitProperties rabbitProperties) {
+        final Mono<Connection> senderConnection = createConnectionMono(provider.getConnectionFactory(), appName,
+                SENDER_TYPE);
         final ChannelPoolOptions channelPoolOptions = new ChannelPoolOptions();
         final PropertyMapper map = PropertyMapper.get();
 
         map.from(rabbitProperties.getCache().getChannel()::getSize).whenNonNull()
-            .to(channelPoolOptions::maxCacheSize);
+                .to(channelPoolOptions::maxCacheSize);
 
         final ChannelPool channelPool = ChannelPoolFactory.createChannelPool(
-            senderConnection,
-            channelPoolOptions
+                senderConnection,
+                channelPoolOptions
         );
 
         return new SenderOptions()
-            .channelPool(channelPool)
-            .resourceManagementChannelMono(channelPool.getChannelMono()
-                .transform(Utils::cache));
+                .channelPool(channelPool)
+                .resourceManagementChannelMono(channelPool.getChannelMono()
+                        .transform(Utils::cache));
     }
 
     @Bean
@@ -108,7 +114,7 @@ public class RabbitMqConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public ConnectionFactoryProvider rabbitRConnectionFactory(RabbitProperties properties) {
+    public ConnectionFactoryProvider rabbitRConnectionFactory(RabbitProperties properties) throws KeyManagementException, NoSuchAlgorithmException {
         final ConnectionFactory factory = new ConnectionFactory();
         PropertyMapper map = PropertyMapper.get();
         map.from(properties::determineHost).whenNonNull().to(factory::setHost);
@@ -116,7 +122,10 @@ public class RabbitMqConfig {
         map.from(properties::determineUsername).whenNonNull().to(factory::setUsername);
         map.from(properties::determinePassword).whenNonNull().to(factory::setPassword);
         map.from(properties::determineVirtualHost).whenNonNull().to(factory::setVirtualHost);
-        factory.useNio();
+        if (properties.getSsl().isEnabled()) {
+            factory.useSslProtocol();
+        }
+//        factory.useNio();
         return () -> factory;
     }
 
@@ -134,7 +143,8 @@ public class RabbitMqConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public DiscardNotifier rabbitDiscardNotifier(ObjectMapperSupplier objectMapperSupplier, ReactiveMessageSender sender, BrokerConfigProps props) {
+    public DiscardNotifier rabbitDiscardNotifier(ObjectMapperSupplier objectMapperSupplier,
+                                                 ReactiveMessageSender sender, BrokerConfigProps props) {
         return new RabbitDiscardNotifier(domainEventBus(sender, props), objectMapperSupplier.get());
     }
 
@@ -147,7 +157,8 @@ public class RabbitMqConfig {
     Mono<Connection> createConnectionMono(ConnectionFactory factory, String connectionPrefix, String connectionType) {
         return Mono.fromCallable(() -> factory.newConnection(connectionPrefix + " " + connectionType))
                 .doOnError(err ->
-                        log.log(Level.SEVERE, "Error creating connection to RabbitMq Broker. Starting retry process...", err)
+                        log.log(Level.SEVERE, "Error creating connection to RabbitMq Broker. Starting retry process.." +
+                                ".", err)
                 )
                 .retryWhen(Retry.backoff(Long.MAX_VALUE, Duration.ofMillis(300))
                         .maxBackoff(Duration.ofMillis(3000)))
@@ -188,13 +199,15 @@ public class RabbitMqConfig {
             @SuppressWarnings("unchecked")
             public <T> RegisteredCommandHandler<T> getCommandHandler(String path) {
                 final RegisteredCommandHandler<T> handler = super.getCommandHandler(path);
-                return handler != null ? handler : new RegisteredCommandHandler<>("", defaultCommandHandler, Object.class);
+                return handler != null ? handler : new RegisteredCommandHandler<>("", defaultCommandHandler,
+                        Object.class);
             }
         };
     }
 
     @Bean
-    public DynamicRegistry dynamicRegistry(HandlerResolver resolver, ReactiveMessageListener listener, IBrokerConfigProps props) {
+    public DynamicRegistry dynamicRegistry(HandlerResolver resolver, ReactiveMessageListener listener,
+                                           IBrokerConfigProps props) {
         return new DynamicRegistryImp(resolver, listener.getTopologyCreator(), props);
     }
 
